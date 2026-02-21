@@ -1,0 +1,17 @@
+data/
+*.parquet
+*.csv
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+credentials.json
+*.key
+.env
+service_account.json
+*.zip
+*.tar.gz
+.DS_Store
+Thumbs.db
+desktop.ini
