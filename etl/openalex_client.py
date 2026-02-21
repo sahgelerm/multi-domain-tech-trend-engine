@@ -4,7 +4,8 @@ import os
 import requests
 import pandas as pd
 
-CONFIG_PATH = '/content/drive/MyDrive/semiconductor_project/config/domains.json'
+# CONFIG_PATH = '/content/drive/MyDrive/semiconductor_project/config/domains.json'
+CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config', 'domains.json')
 HEADERS = {"User-Agent": "mailto:mail@gmail.com"} # Укажите свой email для идентификации при запросах к OpenAlex API
 
 
