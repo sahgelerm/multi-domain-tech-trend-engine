@@ -6,6 +6,14 @@ from pathlib import Path
 import gdown
 import traceback
 from datetime import datetime
+import psutil
+import os
+
+# ========== ЛОГИРОВАНИЕ ПАМЯТИ ==========
+def log_memory(label):
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / 1024 / 1024
+    print(f"📊 [{label}] RAM: {mem:.1f} MB")
 
 DATA_DIR = Path(__file__).parent / "data" / "processed"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -46,6 +54,7 @@ def _download_files():
             except Exception as e:
                 print(f"❌ Ошибка скачивания {filename}: {e}")
     st.success("✅ Проверка данных завершена.")
+    log_memory("После скачивания файлов")
 
 def _generate_fallback_data(domain_clean, error_msg=""):
     print(f"⚠️ Использую ТЕСТОВЫЕ данные для {domain_clean}. Ошибка: {error_msg}")
@@ -104,7 +113,10 @@ def load_domain_data(domain_clean):
     if not papers_available and not patents_available:
         return _generate_fallback_data(domain_clean, "Нет файлов публикаций и патентов")
 
-    con = duckdb.connect()
+    log_memory("Перед созданием DuckDB")
+    # Используем файловую базу вместо in-memory
+    con = duckdb.connect(database='duckdb_temp.db')
+    log_memory("После создания DuckDB")
 
     # --- Загрузка публикаций ---
     all_months = []
@@ -115,11 +127,12 @@ def load_domain_data(domain_clean):
     if papers_available:
         try:
             print(f"📄 Загрузка публикаций из {papers_file.name}")
+            # Читаем только нужные колонки для экономии памяти
             query_papers_monthly = f"""
                 SELECT 
                     strftime(CAST(publication_date AS DATE), '%Y-%m') as month,
                     COUNT(*) as count
-                FROM read_parquet('{papers_file}')
+                FROM read_parquet('{papers_file}', columns={{'publication_date': 'DATE'}})
                 WHERE publication_date IS NOT NULL
                 GROUP BY month
                 ORDER BY month
@@ -129,17 +142,18 @@ def load_domain_data(domain_clean):
             papers_aligned = df_papers_monthly['count'].tolist()
             papers_total = con.execute(f"SELECT COUNT(*) FROM read_parquet('{papers_file}')").fetchone()[0]
             try:
-                cited_avg = con.execute(f"SELECT AVG(citations) FROM read_parquet('{papers_file}') WHERE citations IS NOT NULL").fetchone()[0]
+                cited_avg = con.execute(f"SELECT AVG(citations) FROM read_parquet('{papers_file}', columns={{'citations': 'INT'}}) WHERE citations IS NOT NULL").fetchone()[0]
                 papers_cited_avg = round(cited_avg, 2) if cited_avg else 0
             except:
                 papers_cited_avg = 0
             print(f"✅ Публикации: {papers_total} записей, {len(all_months)} месяцев")
+            log_memory("После загрузки публикаций")
         except Exception as e:
             print(f"❌ Ошибка при обработке публикаций: {e}")
             traceback.print_exc()
             papers_available = False
 
-    # --- Загрузка патентов (с инициализацией переменных) ---
+    # --- Загрузка патентов ---
     patents_aligned_dict = {}
     patents_total = 0
     top_assignees = ["Нет данных"]
@@ -152,14 +166,14 @@ def load_domain_data(domain_clean):
         try:
             print("📃 Загрузка и связывание данных о патентах...")
             
-            # Загружаем данные
+            # Загружаем данные как временные представления
             con.execute(f"""
                 CREATE OR REPLACE TEMP VIEW patents AS SELECT * FROM read_parquet('{patents_file}');
                 CREATE OR REPLACE TEMP VIEW cpc AS SELECT * FROM read_parquet('{cpc_file}');
                 CREATE OR REPLACE TEMP VIEW assignee_harmonized AS SELECT * FROM read_parquet('{assignee_file}');
             """)
             
-            # ДИАГНОСТИКА - узнаем реальные имена колонок
+            # Диагностика колонок
             patents_cols = con.execute("DESCRIBE patents").df()['column_name'].tolist()
             assignee_cols = con.execute("DESCRIBE assignee_harmonized").df()['column_name'].tolist()
             cpc_cols = con.execute("DESCRIBE cpc").df()['column_name'].tolist()
@@ -168,19 +182,18 @@ def load_domain_data(domain_clean):
             print("📊 Колонки в assignee_harmonized:", assignee_cols)
             print("📊 Колонки в cpc:", cpc_cols)
             
-            # Определяем правильные имена колонок для связки
-            patent_id_col = 'publication_number'  # По умолчанию
+            # Определяем имена колонок для связки
+            patent_id_col = 'publication_number'
             if 'patent_id' in patents_cols:
                 patent_id_col = 'patent_id'
             elif 'publication_number' in patents_cols:
                 patent_id_col = 'publication_number'
             
-            assignee_id_col = patent_id_col  # Обычно такое же имя
-            
-            # --- ИСПРАВЛЕНО: определяем тип publication_date и преобразуем ---
+            assignee_id_col = patent_id_col
+
+            # --- Помесячная статистика патентов ---
             date_sample = con.execute("SELECT publication_date FROM patents LIMIT 1").fetchone()
             if date_sample and isinstance(date_sample[0], (int, np.integer)):
-                # Unix timestamp в миллисекундах
                 query_patents_monthly = f"""
                     SELECT 
                         strftime(CAST(to_timestamp(publication_date / 1000) AS DATE), '%%Y-%%m') as month,
@@ -191,7 +204,6 @@ def load_domain_data(domain_clean):
                     ORDER BY month
                 """
             else:
-                # Дата в другом формате
                 query_patents_monthly = f"""
                     SELECT 
                         strftime(CAST(publication_date AS DATE), '%%Y-%%m') as month,
@@ -201,21 +213,18 @@ def load_domain_data(domain_clean):
                     GROUP BY month
                     ORDER BY month
                 """
-
             df_patents_monthly = con.execute(query_patents_monthly).df()
             patents_aligned_dict = dict(zip(df_patents_monthly['month'], df_patents_monthly['count']))
-
             patents_total = con.execute("SELECT COUNT(*) FROM patents").fetchone()[0]
 
-            # Топ-5 заявителей - ИСПРАВЛЕНО
+            # Топ-5 заявителей
             try:
-                # Проверяем, есть ли нужные колонки в assignee_harmonized
                 if 'name' in assignee_cols:
                     name_col = 'name'
                 elif 'assignee_name' in assignee_cols:
                     name_col = 'assignee_name'
                 else:
-                    name_col = assignee_cols[0]  # берем первую колонку
+                    name_col = assignee_cols[0]
                 
                 top_assignees_df = con.execute(f"""
                     SELECT 
@@ -234,7 +243,6 @@ def load_domain_data(domain_clean):
                     print("✅ Топ заявителей получен")
             except Exception as e:
                 print(f"⚠️ Не удалось получить топ заявителей: {e}")
-                # Пробуем альтернативный запрос
                 try:
                     top_assignees_df = con.execute(f"""
                         SELECT 
@@ -252,7 +260,7 @@ def load_domain_data(domain_clean):
                 except:
                     pass
 
-            # География (по publication_number) - ИСПРАВЛЕНО
+            # География
             try:
                 countries_df = con.execute(f"""
                     SELECT 
@@ -279,9 +287,8 @@ def load_domain_data(domain_clean):
             except Exception as e:
                 print(f"⚠️ Не удалось получить географию: {e}")
 
-            # AI-интеграция - ИСПРАВЛЕНО
+            # AI-интеграция
             try:
-                # Определяем колонку с CPC кодом
                 if 'cpc_class' in cpc_cols:
                     cpc_code_col = 'cpc_class'
                 elif 'cpc_code' in cpc_cols:
@@ -306,21 +313,31 @@ def load_domain_data(domain_clean):
                 print(f"⚠️ Не удалось рассчитать AI-долю: {e}")
 
             print(f"✅ Патенты: {patents_total} записей, AI доля: {ai_share}%")
+            log_memory("После загрузки патентов")
+
+            # Удаляем представления, чтобы освободить память (необязательно, но полезно)
+            con.execute("DROP VIEW IF EXISTS patents")
+            con.execute("DROP VIEW IF EXISTS cpc")
+            con.execute("DROP VIEW IF EXISTS assignee_harmonized")
+
         except Exception as e:
             print(f"❌ Критическая ошибка при обработке патентов: {e}")
             traceback.print_exc()
-            patents_available = False  # сбрасываем флаг, но переменные уже инициализированы
+            patents_available = False
 
     # --- Объединение временных рядов ---
     all_months = sorted(set(all_months) | set(patents_aligned_dict.keys() if patents_available else []))
     if not all_months:
+        con.close()
         return _generate_fallback_data(domain_clean, "Нет данных для построения временного ряда")
 
     papers_dict = dict(zip(all_months, papers_aligned)) if papers_available else {}
     papers_aligned_final = [papers_dict.get(month, 0) for month in all_months]
     patents_aligned_final = [patents_aligned_dict.get(month, 0) for month in all_months]
 
-    # --- Расчёт метрик роста (с защитой от ошибок) ---
+    log_memory("Перед расчётом метрик")
+
+    # --- Расчёт метрик ---
     try:
         if len(papers_aligned_final) >= 24:
             recent_papers = sum(papers_aligned_final[-12:])
@@ -336,7 +353,7 @@ def load_domain_data(domain_clean):
         else:
             patents_growth = 0
 
-        # --- Trend Score ---
+        # Trend Score
         if len(papers_aligned_final) >= 12 and len(patents_aligned_final) >= 12:
             years = min(3, len(all_months)//12)
             papers_slopes = []
@@ -369,7 +386,7 @@ def load_domain_data(domain_clean):
         else:
             trend_status = "Созревание"
 
-        # --- Time Lag ---
+        # Time Lag
         try:
             if len(papers_aligned_final) > 0 and len(patents_aligned_final) > 0:
                 years_list = [int(m[:4]) for m in all_months]
@@ -417,7 +434,6 @@ def load_domain_data(domain_clean):
         time_lag = 3.0
         time_lag_change = "0"
 
-    # Сбор метрик
     metrics = {
         'papers_total': papers_total,
         'patents_total': patents_total,
@@ -435,5 +451,7 @@ def load_domain_data(domain_clean):
         'country_values': country_values
     }
 
-    print("✅ Данные успешно загружены и обработаны")
+    log_memory("После расчёта метрик, перед закрытием")
+    con.close()
+    log_memory("После закрытия DuckDB")
     return np.array(all_months), np.array(papers_aligned_final), np.array(patents_aligned_final), metrics
