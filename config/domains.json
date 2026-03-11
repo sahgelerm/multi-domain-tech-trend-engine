@@ -1,0 +1,33 @@
+{
+  "semiconductors": {
+    "display_name": "Semiconductors",
+    "color": "#1f77b4",
+    "openalex_topic_ids": [
+      "T10472",
+      "T10022",
+      "T11429"
+    ],
+    "cpc_codes": [
+      "H01L",
+      "H10",
+      "G03F",
+      "C23C",
+      "H05K"
+    ]
+  },
+  "gene_engineering": {
+    "display_name": "Gene Engineering",
+    "color": "#2ca02c",
+    "openalex_topic_ids": [
+      "T11913",
+      "T10171",
+      "T12312",
+      "T11340"
+    ],
+    "cpc_codes": [
+      "C12N15",
+      "A61K48",
+      "C12N9"
+    ]
+  }
+}
