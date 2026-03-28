@@ -6,3 +6,4 @@ plotly==5.18.0
 matplotlib==3.8.0
 reportlab==4.2.2
 psutil==6.1.1
+google-cloud-bigquery>=3.14.0
