@@ -4,7 +4,6 @@ data_loader.py - загрузка данных для дашборда
 - bigquery: прямое подключение к BigQuery (production)
 - parquet: локальные файлы (для тестирования)
 """
-
 import streamlit as st
 import pandas as pd
 import numpy as np
