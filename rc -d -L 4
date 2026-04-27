@@ -1,0 +1,217 @@
+.
+├── README.md
+├── config
+│   └── domains.json
+├── data
+│   ├── patent_doi_extracted.csv
+│   ├── processed
+│   │   └── trend.parquet
+│   ├── raw
+│   │   ├── citations.parquet
+│   │   ├── openalex.parquet
+│   │   └── patents.parquet
+│   └── time_lag
+│       └── time_lag.csv
+├── docs
+│   └── data_dictionary.csv
+├── etl
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── data_loader.cpython-312.pyc
+│   │   └── openalex_client.cpython-312.pyc
+│   ├── metrics.py
+│   ├── openalex_client.py
+│   └── preprocessing.py
+├── linking
+│   ├── __pycache__
+│   │   └── __init__.cpython-312.pyc
+│   ├── doi_extraction
+│   │   └── __pycache__
+│   │       ├── __init__.cpython-312.pyc
+│   │       ├── doi_join.cpython-312.pyc
+│   │       ├── extract_doi.cpython-312.pyc
+│   │       ├── extractor.cpython-312.pyc
+│   │       ├── normalizer.cpython-312.pyc
+│   │       ├── openalex_loader.cpython-312.pyc
+│   │       ├── pipeline.cpython-312.pyc
+│   │       ├── pipeline_next_step.cpython-312.pyc
+│   │       └── time_lag.cpython-312.pyc
+│   └── time_lag
+│       ├── __init__.py
+│       └── __pycache__
+│           ├── __init__.cpython-312.pyc
+│           ├── lag_analysis.cpython-312.pyc
+│           └── lag_calculator.cpython-312.pyc
+├── notebooks
+│   └── 01_openalex_collection.ipynb
+├── requirements.txt
+├── src
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-312.pyc
+│   ├── analytics
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-312.pyc
+│   │   ├── aggregations
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   └── time_series.py
+│   │   ├── legacy
+│   │   │   └── metrics_v1.py
+│   │   ├── metrics
+│   │   │   └── __init__.py
+│   │   └── trend
+│   │       ├── __pycache__
+│   │       └── metrics.py
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── main.cpython-312.pyc
+│   │   ├── api.log
+│   │   ├── main.py
+│   │   └── venv
+│   │       ├── bin
+│   │       ├── include
+│   │       ├── lib
+│   │       ├── lib64 -> lib
+│   │       └── pyvenv.cfg
+│   ├── dashboard
+│   │   ├── __init__.py
+│   │   └── app.py
+│   ├── data
+│   │   ├── processed
+│   │   │   └── trend.parquet
+│   │   ├── raw
+│   │   │   ├── openalex.parquet
+│   │   │   └── patents.parquet
+│   │   └── time_lag
+│   │       └── time_lag.csv
+│   ├── data_sources
+│   │   ├── __init__.py
+│   │   ├── openalex
+│   │   │   └── __init__.py
+│   │   └── patents
+│   │       └── __init__.py
+│   ├── domains
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── semiconductors.cpython-312.pyc
+│   │   ├── semicondactors.py
+│   │   └── semiconductors.py
+│   ├── etl
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-312.pyc
+│   │   ├── extract
+│   │   │   └── __init__.py
+│   │   ├── load
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   └── local_files.py
+│   │   └── transform
+│   │       └── __init__.py
+│   └── pipelines
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   ├── __init__.cpython-312.pyc
+│       │   ├── aggregation_pipeline.cpython-312.pyc
+│       │   ├── debug_data_inspection.cpython-312.pyc
+│       │   └── debug_data_inspection_ge.cpython-312.pyc
+│       ├── debug_data_inspection.py
+│       ├── debug_data_inspection_ge.py
+│       ├── legacy
+│       │   ├── __pycache__
+│       │   ├── aggregation_pipeline_v1.py
+│       │   └── aggregation_pipeline_v2.py
+│       ├── time_lag
+│       │   ├── __pycache__
+│       │   ├── time_lag_pipeline.py
+│       │   ├── time_lag_pipeline_family_id.py
+│       │   └── time_lag_pipeline_ge.py
+│       └── trend
+│           ├── __pycache__
+│           └── aggregation_pipeline.py
+├── tests
+│   ├── __pycache__
+│   │   └── test_openalex_client.cpython-312-pytest-9.0.2.pyc
+│   ├── test_charts.py
+│   ├── test_e2e_pipeline.py
+│   ├── test_metrics.py
+│   ├── test_openalex_client.py
+│   └── test_preprocessing.py
+├── venv
+│   ├── bin
+│   │   ├── Activate.ps1
+│   │   ├── activate
+│   │   ├── activate.csh
+│   │   ├── activate.fish
+│   │   ├── f2py
+│   │   ├── fastapi
+│   │   ├── gdown
+│   │   ├── hf
+│   │   ├── httpx
+│   │   ├── isympy
+│   │   ├── jsonschema
+│   │   ├── markdown-it
+│   │   ├── normalizer
+│   │   ├── numba
+│   │   ├── numpy-config
+│   │   ├── pip
+│   │   ├── pip3
+│   │   ├── pip3.12
+│   │   ├── plotly_get_chrome
+│   │   ├── proton
+│   │   ├── proton-viewer
+│   │   ├── py.test
+│   │   ├── pygmentize
+│   │   ├── pytest
+│   │   ├── python -> python3
+│   │   ├── python3 -> /usr/bin/python3
+│   │   ├── python3.12 -> python3
+│   │   ├── streamlit
+│   │   ├── tiny-agents
+│   │   ├── torchfrtrace
+│   │   ├── torchrun
+│   │   ├── tqdm
+│   │   ├── transformers
+│   │   ├── typer
+│   │   ├── uvicorn
+│   │   └── watchmedo
+│   ├── etc
+│   │   └── jupyter
+│   │       └── nbconfig
+│   ├── include
+│   │   └── python3.12
+│   ├── lib
+│   │   └── python3.12
+│   │       └── site-packages
+│   ├── lib64 -> lib
+│   ├── pyvenv.cfg
+│   └── share
+│       ├── jupyter
+│       │   ├── labextensions
+│       │   └── nbextensions
+│       └── man
+│           └── man1
+├── visualization
+│   ├── __init__.py
+│   └── charts.py
+├── y
+└── Папка Хасанова Алина
+    ├── README.md
+    ├── app.py
+    ├── create_data.py
+    ├── data
+    │   ├── processed
+    │   └── semiconductors
+    ├── data_loader.py
+    ├── deploy.sh
+    ├── gitignore.txt
+    ├── prepare_summary.py
+    └── requirements.txt
+
+79 directories, 136 files

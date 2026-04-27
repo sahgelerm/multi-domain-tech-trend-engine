@@ -1,66 +1,88 @@
 import pandas as pd
-import os
+from pathlib import Path
 
 # ==============================
-# CONFIG
+# PATHS
 # ==============================
 
-OPENALEX_PATH = "/home/ubuntu/OpenAlex/semiconductors_clean_signal.parquet"
-PATENTS_PATH = "/home/ubuntu/patents/semiconductors"
+BASE_DIR = Path(__file__).resolve().parents[2]
 
+RAW_DIR = BASE_DIR / "data" / "raw"
 
-# ==============================
-# OPENALEX
-# ==============================
-
-print("=== OPENALEX DATA ===")
-
-df_openalex = pd.read_parquet(OPENALEX_PATH)
-
-print("Shape:", df_openalex.shape)
-print("\nColumns:")
-print(df_openalex.columns)
-
-print("\nSample:")
-print(df_openalex.head(2))
+OPENALEX_PATH = RAW_DIR / "openalex.parquet"
+PATENTS_PATH = RAW_DIR / "patents.parquet"
 
 
 # ==============================
-# PATENTS (список файлов)
+# VALIDATION
 # ==============================
 
-print("\n=== PATENTS FILES ===")
+def validate():
+    if not OPENALEX_PATH.exists():
+        raise FileNotFoundError(f"Missing: {OPENALEX_PATH}")
 
-files = os.listdir(PATENTS_PATH)
-for f in files:
-    print(f)
+    if not PATENTS_PATH.exists():
+        raise FileNotFoundError(f"Missing: {PATENTS_PATH}")
+
 
 # ==============================
-# ЗАГРУЗКА ТОЛЬКО НУЖНЫХ ФАЙЛОВ
+# LOAD
 # ==============================
 
-print("\n=== LOADING PATENTS DATA ===")
+def load_data():
+    validate()
 
-# ⚠️ НЕ грузим abstract_localized.parquet (очень тяжелый)
+    print("Loading data...")
 
-patents_file = os.path.join(PATENTS_PATH, "patents.parquet")
-cpc_file = os.path.join(PATENTS_PATH, "cpc.parquet")
+    openalex = pd.read_parquet(OPENALEX_PATH)
+    patents = pd.read_parquet(PATENTS_PATH)
 
-df_patents = pd.read_parquet(patents_file)
-df_cpc = pd.read_parquet(cpc_file)
+    print("OpenAlex:", len(openalex))
+    print("Patents:", len(patents))
 
-print("\nPatents shape:", df_patents.shape)
-print("CPC shape:", df_cpc.shape)
+    return openalex, patents
 
-print("\nPatents columns:")
-print(df_patents.columns)
 
-print("\nCPC columns:")
-print(df_cpc.columns)
+# ==============================
+# INSPECTION
+# ==============================
 
-print("\nPatents sample:")
-print(df_patents.head(2))
+def inspect_openalex(df):
+    print("\nOPENALEX")
 
-print("\nCPC sample:")
-print(df_cpc.head(2))
+    print("Columns:", df.columns.tolist())
+    print("Missing publication_date:", df["publication_date"].isna().sum())
+    print("Topics:", df["topic_name"].nunique())
+
+
+def inspect_patents(df):
+    print("\nPATENTS")
+
+    df["publication_date"] = pd.to_datetime(
+        df["publication_date"].astype(str),
+        format="%Y%m%d",
+        errors="coerce"
+    )
+
+    print("Min date:", df["publication_date"].min())
+    print("Max date:", df["publication_date"].max())
+
+
+# ==============================
+# RUN
+# ==============================
+
+def run():
+    print("=== DEBUG START ===")
+
+    openalex, patents = load_data()
+
+    inspect_openalex(openalex)
+    inspect_patents(patents)
+
+    print("=== DEBUG DONE ===")
+
+
+if __name__ == "__main__":
+    run()
 

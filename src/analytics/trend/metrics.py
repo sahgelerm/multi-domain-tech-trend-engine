@@ -4,10 +4,17 @@ import numpy as np
 
 class TrendMetrics:
     """
-    Compute trend-related metrics on top of time series data.
+    Расчет трендовых метрик по временным рядам.
 
-    Expected input schema:
-    month | topic_name | papers_count | patents_count
+    Вход:
+        topic_name | month | papers_count | patents_count
+
+    Выход:
+        + papers_growth
+        + patents_growth
+        + acceleration
+        + trend_score
+        + trend_label
     """
 
     def __init__(self, df: pd.DataFrame):
@@ -16,89 +23,104 @@ class TrendMetrics:
     def _prepare(self) -> pd.DataFrame:
         df = self.df.copy()
 
-        df["month"] = pd.to_datetime(df["month"])
+        df["month"] = pd.to_datetime(df["month"], errors="coerce")
+        df = df.dropna(subset=["month"])
+
         df = df.sort_values(["topic_name", "month"])
+
+        # защита от пропусков
+        df["papers_count"] = df["papers_count"].fillna(0)
+        df["patents_count"] = df["patents_count"].fillna(0)
 
         return df
 
-    def _compute_growth(self, series: pd.Series, window: int) -> float:
+    @staticmethod
+    def _safe_pct_change(series: pd.Series) -> pd.Series:
         """
-        CAGR-like growth over a rolling window.
+        Безопасный pct_change без inf и NaN
         """
-        if len(series) < window:
-            return 0.0
+        prev = series.shift(1)
 
-        start = series.iloc[-window]
-        end = series.iloc[-1]
+        growth = (series - prev) / prev.replace(0, np.nan)
 
-        if start <= 0:
-            return 0.0
-
-        return (end / start) ** (1 / window) - 1
-
-    def _compute_acceleration(self, series: pd.Series, window: int) -> float:
-        """
-        Acceleration = growth(current window) - growth(previous window)
-        """
-        if len(series) < window * 2:
-            return 0.0
-
-        current_growth = self._compute_growth(series.iloc[-window:], window)
-        prev_growth = self._compute_growth(series.iloc[-2 * window:-window], window)
-
-        return current_growth - prev_growth
-
-    def _label_trend(self, score: float) -> str:
-        if score >= 0.7:
-            return "Emerging"
-        elif score >= 0.4:
-            return "Growing"
-        elif score >= 0.2:
-            return "Stable"
-        else:
-            return "Cooling"
+        return growth.replace([np.inf, -np.inf], 0).fillna(0)
 
     def compute(self) -> pd.DataFrame:
         df = self._prepare()
 
-        results = []
+        # ==============================
+        # GROWTH
+        # ==============================
 
-        for topic, group in df.groupby("topic_name"):
-            group = group.sort_values("month")
+        df["papers_growth"] = df.groupby("topic_name")["papers_count"].transform(
+            self._safe_pct_change
+        )
 
-            papers = group["papers_count"]
-            patents = group["patents_count"]
+        df["patents_growth"] = df.groupby("topic_name")["patents_count"].transform(
+            self._safe_pct_change
+        )
 
-            papers_growth = self._compute_growth(papers, window=3)
-            patents_growth = self._compute_growth(patents, window=3)
+        # ==============================
+        # SMOOTHING
+        # ==============================
 
-            papers_acc = self._compute_acceleration(papers, window=3)
-            patents_acc = self._compute_acceleration(patents, window=3)
+        df["papers_growth"] = df.groupby("topic_name")["papers_growth"].transform(
+            lambda x: x.rolling(window=3, min_periods=1).mean()
+        )
 
-            combined_growth = (papers_growth + patents_growth) / 2
+        df["patents_growth"] = df.groupby("topic_name")["patents_growth"].transform(
+            lambda x: x.rolling(window=3, min_periods=1).mean()
+        )
 
-            # Trend score (simple weighted heuristic MVP)
-            trend_score = (
-                0.5 * papers_growth +
-                0.5 * patents_growth +
-                0.2 * papers_acc +
-                0.2 * patents_acc
-            )
+        # ==============================
+        # ACCELERATION
+        # ==============================
 
-            trend_score = float(np.clip(trend_score, 0, 1))
+        df["papers_acceleration"] = df.groupby("topic_name")["papers_growth"].diff().fillna(0)
+        df["patents_acceleration"] = df.groupby("topic_name")["patents_growth"].diff().fillna(0)
 
-            results.append({
-                "topic_name": topic,
-                "papers_growth": papers_growth,
-                "patents_growth": patents_growth,
-                "papers_acceleration": papers_acc,
-                "patents_acceleration": patents_acc,
-                "combined_growth": combined_growth,
-                "trend_score": trend_score,
-                "trend_label": self._label_trend(trend_score)
-            })
+        # ==============================
+        # TREND SCORE
+        # ==============================
 
-        metrics_df = pd.DataFrame(results)
+        df["trend_score_raw"] = (
+            0.4 * df["papers_growth"]
+            + 0.4 * df["patents_growth"]
+            + 0.1 * df["papers_acceleration"]
+            + 0.1 * df["patents_acceleration"]
+        )
 
-        return df.merge(metrics_df, on="topic_name", how="left")
+        # нормализация в 0–1
+        min_val = df["trend_score_raw"].min()
+        max_val = df["trend_score_raw"].max()
+
+        if max_val != min_val:
+            df["trend_score"] = (df["trend_score_raw"] - min_val) / (max_val - min_val)
+        else:
+            df["trend_score"] = 0
+
+        # ==============================
+        # LABEL
+        # ==============================
+
+        def label(score: float) -> str:
+            if score >= 0.7:
+                return "Зарождающийся"
+            elif score >= 0.4:
+                return "Растущий"
+            elif score >= 0.2:
+                return "Стабильный"
+            else:
+                return "Снижающийся"
+
+        df["trend_label"] = df["trend_score"].apply(label)
+
+        # ==============================
+        # FINAL CLEAN
+        # ==============================
+
+        df = df.replace([np.inf, -np.inf], 0)
+        df = df.fillna(0)
+
+        return df
 
