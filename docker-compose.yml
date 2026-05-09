@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+
+  api_semiconductors:
+    build: .
+    container_name: api_semiconductors
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+
+  api_gene_engineering:
+    build: .
+    container_name: api_gene_engineering
+    command: uvicorn src.api.main_ge:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+
+  dashboard_semiconductors:
+    build: .
+    container_name: dashboard_semiconductors
+    command: streamlit run src/dashboard/app.py --server.port 8506 --server.address 0.0.0.0
+    ports:
+      - "8506:8506"
+    volumes:
+      - .:/app
+    depends_on:
+      - api_semiconductors
+
+  dashboard_gene_engineering:
+    build: .
+    container_name: dashboard_gene_engineering
+    command: streamlit run src/dashboard/app_ge.py --server.port 8508 --server.address 0.0.0.0
+    ports:
+      - "8508:8508"
+    volumes:
+      - .:/app
+    depends_on:
+      - api_gene_engineering

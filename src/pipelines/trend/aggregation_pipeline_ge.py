@@ -1,5 +1,5 @@
-import pandas as pd
 from pathlib import Path
+import pandas as pd
 
 from src.analytics.trend.metrics import TrendMetrics
 
@@ -9,11 +9,13 @@ from src.analytics.trend.metrics import TrendMetrics
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-RAW_DIR = BASE_DIR / "data" / "raw"
-OUTPUT_DIR = BASE_DIR / "data" / "processed"
+RAW_DIR = BASE_DIR / "data" / "raw" / "gene_engineering"
+PROCESSED_DIR = BASE_DIR / "data" / "processed"
 
-OPENALEX_PATH = RAW_DIR / "openalex.parquet"
-PATENTS_PATH = RAW_DIR / "patents.parquet"
+OPENALEX_PATH = RAW_DIR / "openalex_ge.parquet"
+PATENTS_PATH = RAW_DIR / "patents_ge.parquet"
+
+OUTPUT_PATH = PROCESSED_DIR / "trend_ge.parquet"
 
 
 # ==============================
@@ -61,11 +63,11 @@ def load_openalex() -> pd.DataFrame:
 def load_patents() -> pd.DataFrame:
     df = pd.read_parquet(PATENTS_PATH)
 
-    if "publication_date" not in df.columns:
-        raise ValueError("publication_date missing in patents")
+    if "priority_date" not in df.columns:
+        raise ValueError("priority_date missing in patents")
 
     df["publication_date"] = pd.to_datetime(
-        df["publication_date"].astype(str),
+        df["priority_date"].astype(str),
         format="%Y%m%d",
         errors="coerce"
     )
@@ -88,7 +90,7 @@ def load_patents() -> pd.DataFrame:
 # ==============================
 
 def run():
-    print("=== TREND PIPELINE START ===")
+    print("=== AGGREGATION GE START ===")
 
     validate()
 
@@ -109,17 +111,14 @@ def run():
     df["patents_count"] = df["patents_count"].fillna(0).astype(float)
 
     # ==============================
-    # FIX: УБИРАЕМ ДУБЛИРОВАНИЕ
+    # ✅ FIX: РАСПРЕДЕЛЕНИЕ ПАТЕНТОВ
     # ==============================
 
-    # сумма публикаций по месяцу
     df["papers_total_month"] = df.groupby("month")["papers_count"].transform("sum")
 
-    # защита от деления на 0
     df["papers_share"] = df["papers_count"] / df["papers_total_month"]
     df["papers_share"] = df["papers_share"].fillna(0)
 
-    # распределяем патенты пропорционально
     df["patents_count"] = df["patents_count"] * df["papers_share"]
 
     # ==============================
@@ -131,7 +130,7 @@ def run():
     df = df.sort_values(["topic_name", "month"])
 
     # ==============================
-    # METRICS
+    # METRICS (как в semiconductors)
     # ==============================
 
     df = TrendMetrics(df).compute()
@@ -143,12 +142,14 @@ def run():
     df = df.replace([float("inf"), float("-inf")], 0)
     df = df.fillna(0)
 
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    output_path = OUTPUT_DIR / "trend.parquet"
+    # ==============================
+    # SAVE
+    # ==============================
 
-    df.to_parquet(output_path, index=False)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df.to_parquet(OUTPUT_PATH, index=False)
 
-    print(f"Saved → {output_path}")
+    print(f"Saved → {OUTPUT_PATH}")
     print("=== DONE ===")
 
 

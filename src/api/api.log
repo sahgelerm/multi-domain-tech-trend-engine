@@ -1,10 +1,17 @@
 nohup: ignoring input
-INFO:     Started server process [20158]
+INFO:     Will watch for changes in these directories: ['/home/ubuntu/indlab-techtrends-ds/src/api']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [78262] using StatReload
+INFO:     Started server process [78264]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     127.0.0.1:19072 - "GET /health HTTP/1.1" 200 OK
+📂 Loading trend from: /home/ubuntu/indlab-techtrends-ds/src/data/processed/trend.parquet
+INFO:     127.0.0.1:41444 - "GET /topics HTTP/1.1" 200 OK
+📂 Loading trend from: /home/ubuntu/indlab-techtrends-ds/src/data/processed/trend.parquet
+API TOTAL: 4632970.0
+INFO:     127.0.0.1:41450 - "GET /topic_card?topic=semiconductors HTTP/1.1" 200 OK
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [20158]
+INFO:     Finished server process [78264]
+INFO:     Stopping reloader process [78262]

@@ -16,3 +16,13 @@ streamlit>=1.28
 
 # Google Cloud (Task 2)
 google-cloud-bigquery>=3.0
+
+fastapi
+uvicorn
+pandas
+numpy
+pyarrow
+streamlit
+plotly
+requests
+scikit-learn

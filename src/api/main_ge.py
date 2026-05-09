@@ -1,28 +1,28 @@
 from fastapi import FastAPI
+from functools import lru_cache
 import pandas as pd
 from pathlib import Path
 
-app = FastAPI(title="Tech Trends API")
+app = FastAPI(title="Tech Trends API (GE)")
 
 # ==============================
-# PATHS (FIX)
+# PATHS
 # ==============================
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-TREND_PATH = BASE_DIR / "src" / "data" / "processed" / "trend.parquet"
-LAG_PATH = BASE_DIR / "src" / "data" / "time_lag" / "time_lag.csv"
+TREND_PATH = BASE_DIR / "src" / "data" / "processed" / "trend_ge.parquet"
+LAG_PATH = BASE_DIR / "src" / "data" / "time_lag" / "time_lag_ge.csv"
 
 
 # ==============================
-# LOADERS (FIX: убран cache)
+# LOADERS
 # ==============================
 
+@lru_cache()
 def load_trend() -> pd.DataFrame:
-    print(f"📂 Loading trend from: {TREND_PATH}")
-
     if not TREND_PATH.exists():
-        print("❌ trend.parquet not found")
+        print("❌ trend_ge.parquet not found")
         return pd.DataFrame()
 
     try:
@@ -35,19 +35,26 @@ def load_trend() -> pd.DataFrame:
         print("❌ topic_name missing")
         return pd.DataFrame()
 
-    return df.copy()  # защита от мутаций
+    # ✅ FIX: добавлена очистка как в semiconductors
+    df = df.replace([float("inf"), float("-inf")], pd.NA)
+    df = df.fillna(0)
+
+    return df
 
 
+@lru_cache()
 def load_lag() -> pd.DataFrame:
     if not LAG_PATH.exists():
-        print("❌ time_lag.csv not found")
+        print("❌ time_lag_ge.csv not found")
         return pd.DataFrame()
 
     try:
-        return pd.read_csv(LAG_PATH)
+        df = pd.read_csv(LAG_PATH)
     except Exception as e:
         print("❌ csv read error:", e)
         return pd.DataFrame()
+
+    return df
 
 
 # ==============================
@@ -56,7 +63,7 @@ def load_lag() -> pd.DataFrame:
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "domain": "gene_engineering"}
 
 
 # ==============================
@@ -74,31 +81,26 @@ def get_topics():
 
 
 # ==============================
-# TOPIC CARD (FIX)
+# TOPIC CARD (FIXED)
 # ==============================
 
 @app.get("/topic_card")
 def get_topic(topic: str):
-
     df = load_trend()
-
-    print("API TOTAL:", df["patents_count"].sum())  # DEBUG
 
     if df.empty:
         return []
 
     try:
+        if "month" not in df.columns:
+            return []
+
         df["month"] = pd.to_datetime(df["month"], errors="coerce")
         df = df.dropna(subset=["month"])
 
-        # ❗ ГЛОБАЛЬНЫЕ ПАТЕНТЫ (без дублей)
-        total_patents = (
-            df[["month", "patents_count"]]
-            .drop_duplicates()["patents_count"]
-            .sum()
-        )
+        # ✅ FIX 1: сохраняем полный df
+        df_full = df.copy()
 
-        # фильтр темы
         df_topic = df[
             df["topic_name"]
             .astype(str)
@@ -108,13 +110,17 @@ def get_topic(topic: str):
         if df_topic.empty:
             return []
 
+        # ✅ FIX 2: очистка (критично для trend_score)
         df_topic = df_topic.replace([float("inf"), float("-inf")], pd.NA)
         df_topic = df_topic.fillna(0)
 
         df_topic = df_topic.sort_values("month").tail(24)
 
+        # ✅ FIX 3: глобальные патенты (НЕ по topic)
+        total_patents = float(df_full["patents_count"].sum())
+
         df_topic = df_topic.copy()
-        df_topic["total_patents"] = float(total_patents)
+        df_topic["total_patents"] = total_patents
 
         return df_topic.to_dict(orient="records")
 

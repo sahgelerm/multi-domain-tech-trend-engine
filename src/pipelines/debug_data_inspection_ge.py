@@ -1,73 +1,37 @@
 import pandas as pd
-import os
+from pathlib import Path
 
-# ==============================
-# CONFIG (GE DOMAIN)
-# ==============================
+BASE_DIR = Path(__file__).resolve().parents[2]
+RAW_DIR = BASE_DIR / "src" / "data" / "raw" / "gene_engineering"
 
-OPENALEX_PATH = "/home/ubuntu/OpenAlex"
-PATENTS_PATH = "/home/ubuntu/patents/ge"
-
-print("=== CHECK PATHS ===")
-
-print("OpenAlex exists:", os.path.exists(OPENALEX_PATH))
-print("Patents GE exists:", os.path.exists(PATENTS_PATH))
+OPENALEX_PATH = RAW_DIR / "openalex_ge.parquet"
+PATENTS_PATH = RAW_DIR / "patents_ge.parquet"
 
 
-# ==============================
-# LIST OPENALEX FILES
-# ==============================
+def validate():
+    if not OPENALEX_PATH.exists():
+        raise FileNotFoundError(f"Missing: {OPENALEX_PATH}")
 
-print("\n=== OPENALEX FILES ===")
-
-try:
-    oa_files = os.listdir(OPENALEX_PATH)
-    for f in oa_files:
-        print(f)
-except Exception as e:
-    print("Error reading OpenAlex:", e)
+    if not PATENTS_PATH.exists():
+        raise FileNotFoundError(f"Missing: {PATENTS_PATH}")
 
 
-# ==============================
-# LIST PATENTS GE FILES
-# ==============================
+def run():
+    print("=== DEBUG GE START ===")
 
-print("\n=== GE PATENTS FILES ===")
+    validate()
 
-try:
-    patent_files = os.listdir(PATENTS_PATH)
-    for f in patent_files:
-        print(f)
-except Exception as e:
-    print("Error reading patents:", e)
+    openalex = pd.read_parquet(OPENALEX_PATH)
+    patents = pd.read_parquet(PATENTS_PATH)
+
+    print("OpenAlex:", len(openalex))
+    print("Patents:", len(patents))
+
+    print("Topics:", openalex["topic_name"].nunique())
+
+    print("=== DEBUG GE DONE ===")
 
 
-# ==============================
-# LOAD SAMPLE FILES (SAFE)
-# ==============================
+if __name__ == "__main__":
+    run()
 
-print("\n=== LOADING SAMPLE FILES ===")
-
-try:
-    patents_file = os.path.join(PATENTS_PATH, "patents.parquet")
-    citation_file = os.path.join(PATENTS_PATH, "citation.parquet")
-
-    df_patents = pd.read_parquet(patents_file)
-    df_citations = pd.read_parquet(citation_file)
-
-    print("\nPatents shape:", df_patents.shape)
-    print("Patents columns:")
-    print(df_patents.columns)
-
-    print("\nCitations shape:", df_citations.shape)
-    print("Citations columns:")
-    print(df_citations.columns)
-
-    print("\nPatents sample:")
-    print(df_patents.head(2))
-
-    print("\nCitations sample:")
-    print(df_citations.head(2))
-
-except Exception as e:
-    print("Error loading data:", e)

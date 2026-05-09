@@ -90,14 +90,16 @@ class TrendMetrics:
             + 0.1 * df["patents_acceleration"]
         )
 
-        # нормализация в 0–1
-        min_val = df["trend_score_raw"].min()
-        max_val = df["trend_score_raw"].max()
+        # ✅ FIX: нормализация ПО КАЖДОЙ ТЕМЕ
+        def normalize(group):
+            min_val = group.min()
+            max_val = group.max()
+            if max_val != min_val:
+                return (group - min_val) / (max_val - min_val)
+            else:
+                return pd.Series(0, index=group.index)
 
-        if max_val != min_val:
-            df["trend_score"] = (df["trend_score_raw"] - min_val) / (max_val - min_val)
-        else:
-            df["trend_score"] = 0
+        df["trend_score"] = df.groupby("topic_name")["trend_score_raw"].transform(normalize)
 
         # ==============================
         # LABEL
