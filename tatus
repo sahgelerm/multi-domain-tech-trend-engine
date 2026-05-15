@@ -1,0 +1,31 @@
+src
+├── analytics
+│   ├── aggregations
+│   ├── legacy
+│   ├── metrics
+│   └── trend
+├── api
+├── dashboard
+├── data
+│   ├── processed
+│   ├── raw
+│   │   └── gene_engineering
+│   └── time_lag
+├── data_sources
+│   ├── openalex
+│   └── patents
+├── domains
+├── etl
+│   ├── extract
+│   ├── load
+│   └── transform
+├── pipelines
+│   ├── legacy
+│   ├── time_lag
+│   └── trend
+└── src
+    └── data
+        └── raw
+            └── gene_engineering
+
+29 directories
