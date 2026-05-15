@@ -5,20 +5,28 @@ Multi-Domain Tech Trend Engine
 О проекте
 
 Проект представляет собой production-style MVP аналитической платформы, реализующей полный цикл:
+
 Data Sources → ETL → Analytics → API → Dashboard
 
 Платформа поддерживает multi-domain архитектуру и позволяет независимо масштабировать технологические домены.
+
 Реализованные домены:
+
 •	Semiconductors
 •	Gene Engineering
 
 Каждый домен изолирован:
 
 •	на уровне raw-данных,
+
 •	ETL pipeline,
+
 •	aggregation pipeline,
+
 •	API,
+
 •	dashboard layer,
+
 •	processed datasets.
 
 Архитектура проекта
@@ -38,81 +46,116 @@ src/
 Data Engineering
 
 •	ETL pipelines
+
 •	parquet processing
+
 •	monthly aggregation
+
 •	time series generation
 
 Analytics
 
 •	trend metrics engine
+
 •	trend_score
+
 •	speed_score
+
 •	time lag analytics
+
 •	rolling smoothing
+
 •	acceleration metrics
 
 Backend
 
 •	FastAPI
+
 •	REST API
+
 •	caching
+
 •	production cleaning
 
 Frontend
 
 •	Streamlit dashboards
+
 •	KPI cards
+
 •	Plotly visualizations
 
 Infrastructure
 
 •	AWS EC2
+
 •	Docker
+
 •	docker-compose
+
 •	Linux deployment
 
 Docker Architecture
 
 Контейнеры проекта:
 
-Container	Port
+Container	Ports
+
 api_semiconductors	8001
+
 api_gene_engineering	8002
+
 dashboard_semiconductors	8506
+
 dashboard_gene_engineering	8508
 
 Development Workflow
 
 Основная разработка MVP велась в ветке:
+
 •	analytics-mvp
 
 Дополнительные исследовательские ветки:
 
 •	doi_linkage_mvp — эксперименты с DOI linkage и NPL extraction
+
 •	science-patents — исследования сопоставления scientific papers и patents
+
 •	tech-trend-engine — ранняя версия trend analytics architecture
 
 Документация
 
 Документация проекта находится в:
+
 docs/
 
 Основные документы:
 
 •	architecture.md
+
 •	multi_domain_dashboard.md
+
 •	deployment.md
+
 •	project_tree.txt
 
 Технологии
 
 •	Python
+
 •	Pandas
+
 •	FastAPI
+
 •	Streamlit
+
 •	Plotly
+
 •	Docker
+
 •	AWS EC2
+
 •	Parquet
+
 •	BigQuery
 
