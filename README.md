@@ -13,6 +13,7 @@ Data Sources → ETL → Analytics → API → Dashboard
 Реализованные домены:
 
 •	Semiconductors
+
 •	Gene Engineering
 
 Каждый домен изолирован:
@@ -29,7 +30,7 @@ Data Sources → ETL → Analytics → API → Dashboard
 
 •	processed datasets.
 
-Архитектура проекта
+Архитектура проекта:
 
 src/
 ├── analytics
