@@ -7,7 +7,7 @@ Multi-Domain Tech Trend Engine
 
 Проект представляет собой production-style MVP аналитической платформы, реализующей полный цикл:
 
-Data Sources → ETL → Analytics → API → Dashboard
+Data Sources → ETL → Analytics → API → Dashboard 
 
 Платформа поддерживает multi-domain архитектуру и позволяет независимо масштабировать технологические домены.
 
