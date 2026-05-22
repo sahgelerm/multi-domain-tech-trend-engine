@@ -44,6 +44,14 @@ OpenAlex / Patents
 
 •	processed datasets.
 
+## Преимущества архитектуры
+
+• Масштабируемость — возможность добавления новых технологических доменов.
+
+• Модульность — независимое расширение ETL, analytics и API слоев без изменения общей архитектуры.
+
+• Гибкость аналитики — возможность подключения новых метрик, dashboard-компонентов и аналитических пайплайнов.
+
 ## Архитектура проекта
 
 ```text
@@ -59,8 +67,28 @@ src/
 ```
 ## Tech Stack
 
-Python • FastAPI • Streamlit • Docker • Pandas • Plotly • AWS EC2 • Parquet • BigQuery
+```text
+Core
+• Python
 
+Data & ETL
+• OpenAlex API
+• Pandas
+• Parquet
+• BigQuery
+
+Backend
+• FastAPI
+• REST API
+
+Frontend
+• Streamlit
+• Plotly
+
+Infrastructure
+• Docker
+• AWS EC2
+```
 ## Основные возможности:
 
 ## Data Engineering
@@ -138,21 +166,19 @@ Python • FastAPI • Streamlit • Docker • Pandas • Plotly • AWS EC2 �
 
 •	tech-trend-engine — ранняя версия trend analytics architecture
 
-## Документация
+## Project Structure & Assets
 
-Документация проекта находится в:
+Репозиторий включает:
 
-docs/
+• dashboard screenshots
 
-## Основные документы:
+• multi-domain architecture
 
-•	architecture.md
+• ETL / analytics pipelines
 
-•	multi_domain_dashboard.md
+• deployment structure
 
-•	deployment.md 
-
-•	project_tree.txt
+• research branches
 
 ## Dashboard Preview
 
