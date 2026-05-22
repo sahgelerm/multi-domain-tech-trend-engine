@@ -150,7 +150,7 @@ docs/
 
 •	multi_domain_dashboard.md
 
-•	deployment.md
+•	deployment.md 
 
 •	project_tree.txt
 
