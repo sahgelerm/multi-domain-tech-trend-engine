@@ -1,13 +1,26 @@
-Multi-Domain Tech Trend Engine
+## Multi-Domain Tech Trend Engine
 
 Проект разрабатывался как внутренняя platform-архитектура внутри существующего исследовательского репозитория стажировки.
 В рамках работы была реализована новая production-style multi-domain структура проекта.
 
-О проекте
+## О проекте
 
 Проект представляет собой production-style MVP аналитической платформы, реализующей полный цикл:
 
-Data Sources → ETL → Analytics → API → Dashboard 
+```text
+OpenAlex / Patents
+        ↓
+      ETL
+        ↓
+ Aggregation
+        ↓
+ Trend Metrics
+        ↓
+ FastAPI
+        ↓
+ Streamlit
+
+```
 
 Платформа поддерживает multi-domain архитектуру и позволяет независимо масштабировать технологические домены.
 
@@ -31,8 +44,9 @@ Data Sources → ETL → Analytics → API → Dashboard
 
 •	processed datasets.
 
-Архитектура проекта:
+## Архитектура проекта
 
+```text
 src/
 ├── analytics
 ├── api
@@ -42,10 +56,14 @@ src/
 ├── domains
 ├── etl
 └── pipelines
+```
+## Tech Stack
 
-Основные возможности:
+Python • FastAPI • Streamlit • Docker • Pandas • Plotly • AWS EC2 • Parquet • BigQuery
 
-Data Engineering
+## Основные возможности:
+
+## Data Engineering
 
 •	ETL pipelines
 
@@ -55,7 +73,7 @@ Data Engineering
 
 •	time series generation
 
-Analytics
+## Analytics
 
 •	trend metrics engine
 
@@ -69,7 +87,7 @@ Analytics
 
 •	acceleration metrics
 
-Backend
+## Backend
 
 •	FastAPI
 
@@ -79,7 +97,7 @@ Backend
 
 •	production cleaning
 
-Frontend
+## Frontend
 
 •	Streamlit dashboards
 
@@ -87,7 +105,7 @@ Frontend
 
 •	Plotly visualizations
 
-Infrastructure
+## Infrastructure
 
 •	AWS EC2
 
@@ -97,21 +115,16 @@ Infrastructure
 
 •	Linux deployment
 
-Docker Architecture
+## Docker Architecture
 
-Контейнеры проекта:
+| Container | Port |
+|---|---|
+| api_semiconductors | 8001 |
+| api_gene_engineering | 8002 |
+| dashboard_semiconductors | 8506 |
+| dashboard_gene_engineering | 8508 |
 
-Container	Ports
-
-api_semiconductors	8001
-
-api_gene_engineering	8002
-
-dashboard_semiconductors	8506
-
-dashboard_gene_engineering	8508
-
-Development Workflow
+## Development Workflow
 
 Основная разработка MVP велась в ветке:
 
@@ -125,13 +138,13 @@ Development Workflow
 
 •	tech-trend-engine — ранняя версия trend analytics architecture
 
-Документация
+## Документация
 
 Документация проекта находится в:
 
 docs/
 
-Основные документы:
+## Основные документы:
 
 •	architecture.md
 
@@ -141,23 +154,13 @@ docs/
 
 •	project_tree.txt
 
-Технологии
+## Dashboard Preview
 
-•	Python
+### Semiconductors Dashboard
 
-•	Pandas
+![Semiconductors Dashboard](docs/images/dashboard_semiconductors.png)
 
-•	FastAPI
+### Gene Engineering Dashboard
 
-•	Streamlit
-
-•	Plotly
-
-•	Docker
-
-•	AWS EC2
-
-•	Parquet
-
-•	BigQuery
+![Gene Engineering Dashboard](docs/images/dashboard_gene_engineering.png)
 
