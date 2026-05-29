@@ -21,7 +21,6 @@ OpenAlex / Patents
  Streamlit
 
 ```
-
 Платформа поддерживает multi-domain архитектуру и позволяет независимо масштабировать технологические домены.
 
 Реализованные домены:
@@ -66,7 +65,6 @@ src/
 └── pipelines
 ```
 ## Tech Stack
-
 ```text
 Core
 • Python
@@ -101,6 +99,18 @@ Infrastructure
 
 •	time series generation
 
+## Data Processing & SQL
+```text
+• Объединение данных - операции слияния/группировки (data joins - merge / groupby operations)
+
+• Нормализация данных и выравнивание схемы (data normalization and schema alignment)
+
+• Обработка интеграции данных из нескольких источников (handling multi-source data integration (OpenAlex + Patents))
+
+• Аналитические преобразования - агрегация, фильтрация, временные ряды (analytical transformations - aggregation, filtering, time series)
+
+• Обработка данных на основе SQL (SQL-based data processing (BigQuery))
+```
 ## Analytics
 
 •	trend metrics engine
@@ -116,15 +126,31 @@ Infrastructure
 •	acceleration metrics
 
 ## Backend
+```text
+• FastAPI
 
-•	FastAPI
+• REST API (multi-domain endpoints)
 
-•	REST API
+• API design and routing
 
-•	caching
+• caching strategies
 
-•	production cleaning
+• data serialization (JSON responses)
 
+• API testing and validation
+
+• production-ready endpoint structuring
+```
+## Testing & Validation
+```text
+• data validation during ETL (проверка схемы, проверка корректности)
+
+• pipeline testing (DataLoader, проверка загрузки данных)
+
+• API testing (проверка конечных точек, проверка ответов)
+
+• Отладка и обработка ошибок в производственной среде
+```
 ## Frontend
 
 •	Streamlit dashboards
@@ -153,19 +179,19 @@ Infrastructure
 | dashboard_gene_engineering | 8508 |
 
 ## Development Workflow
+```text
+Проект разрабатывался с использованием multi-branch workflow:
 
-Основная разработка MVP велась в ветке:
+Основная ветвь:
+• analytics-mvp — основная продуктовая разработка
 
-•	analytics-mvp
+Ветви исследований и экспериментов:
+• doi_linkage_mvp — эксперименты по установлению связей DOI и извлечению NPL
+• science-patents — исследования по интеграции патентов и научных публикаций
+• tech-trend-engine — прототипы ранней архитектуры аналитики трендов
 
-Дополнительные исследовательские ветки:
-
-•	doi_linkage_mvp — эксперименты с DOI linkage и NPL extraction
-
-•	science-patents — исследования сопоставления scientific papers и patents
-
-•	tech-trend-engine — ранняя версия trend analytics architecture
-
+Структура ветвей использовалась для изоляции экспериментальных конвейеров, проверки альтернативных аналитических подходов и поддержки итеративной разработки платформы без влияния на стабильную архитектуру MVP.
+```
 ## Project Structure & Assets
 
 Репозиторий включает:
