@@ -191,10 +191,12 @@ Linux/macOS:
 source venv/bin/activate
 Install dependencies
 pip install -r requirements.txt
-Run FastAPI service
-uvicorn src.api.app:app --reload --port 8001
+Semiconductors API:
+uvicorn src.api.main:app --reload --port 8001
+Gene Engineering API:
+uvicorn src.api.main:app --reload --port 8002
 Run Streamlit dashboard
-streamlit run src.dashboard.app.py
+streamlit run src/dashboard/dashboard_app.py
 ```
 ## Development Workflow
 ```text
