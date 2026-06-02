@@ -1,1 +1,5 @@
 
+DOMAIN_NAME = "gene_engineering"
+
+API_PORT = 8002
+DASHBOARD_PORT = 8501
