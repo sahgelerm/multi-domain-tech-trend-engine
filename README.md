@@ -178,6 +178,24 @@ Infrastructure
 | dashboard_semiconductors | 8506 |
 | dashboard_gene_engineering | 8508 |
 
+## Setup & Run
+```text
+Clone repository
+git clone https://github.com/sahgelerm/multi-domain-tech-trend-engine.git
+cd multi-domain-tech-trend-engine
+Create virtual environment
+python -m venv venv
+Windows:
+venv\Scripts\activate
+Linux/macOS:
+source venv/bin/activate
+Install dependencies
+pip install -r requirements.txt
+Run FastAPI service
+uvicorn src.api.app:app --reload --port 8001
+Run Streamlit dashboard
+streamlit run src.dashboard.app.py
+```
 ## Development Workflow
 ```text
 Проект разрабатывался с использованием multi-branch workflow:
