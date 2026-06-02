@@ -1,0 +1,4 @@
+DOMAIN_NAME = "semiconductors"
+
+API_PORT = 8001
+DASHBOARD_PORT = 8506
