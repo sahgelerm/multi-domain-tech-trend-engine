@@ -192,20 +192,6 @@ Infrastructure
 
 Структура ветвей использовалась для изоляции экспериментальных конвейеров, проверки альтернативных аналитических подходов и поддержки итеративной разработки платформы без влияния на стабильную архитектуру MVP.
 ```
-## Project Structure & Assets
-
-Репозиторий включает:
-
-• dashboard screenshots
-
-• multi-domain architecture
-
-• ETL / analytics pipelines
-
-• deployment structure
-
-• research branches
-
 ## Dashboard Preview
 
 ### Semiconductors Dashboard
