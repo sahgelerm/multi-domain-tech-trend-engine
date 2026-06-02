@@ -55,14 +55,33 @@ OpenAlex / Patents
 
 ```text
 src/
-├── analytics
-├── api
-├── dashboard
-├── data
-├── data_sources
-├── domains
-├── etl
-└── pipelines
+├── analytics/
+│   ├── metrics.py
+│   ├── time_series.py
+│   └── time_lag.py
+│
+├── api/
+│   └── main.py
+│
+├── dashboard/
+│   └── dashboard_app.py
+│
+├── data/
+│
+├── data_sources/
+│   ├── openalex_client.py
+│   └── bigquery_client.py
+│
+├── domains/
+│   ├── semiconductors.py
+│   └── gene_engineering.py
+│
+├── etl/
+│   └── local_files.py
+│
+└── pipelines/
+    └── aggregation_pipeline.py
+
 ```
 ## Tech Stack
 ```text
