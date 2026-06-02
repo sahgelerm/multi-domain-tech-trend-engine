@@ -1,0 +1,12 @@
+## Data Layer
+
+Директория предназначена для хранения raw, processed и intermediate datasets, используемых в multi-domain аналитических pipeline.
+
+Примеры структуры:
+
+data/
+├── raw/
+├── processed/
+└── time_lag/
+
+Данные в репозитории не хранятся и исключены через .gitignore.
