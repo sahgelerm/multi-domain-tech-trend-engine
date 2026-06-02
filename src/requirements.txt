@@ -1,0 +1,9 @@
+pandas
+numpy
+fastapi
+uvicorn
+streamlit
+plotly
+pyarrow
+google-cloud-bigquery
+requests
