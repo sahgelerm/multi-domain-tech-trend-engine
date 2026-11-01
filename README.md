@@ -1,5 +1,3 @@
-## Multi-Domain Tech Trend Engine
-
 ## О проекте
 
 Проект представляет собой production-style MVP аналитической платформы, реализующей полный цикл:
